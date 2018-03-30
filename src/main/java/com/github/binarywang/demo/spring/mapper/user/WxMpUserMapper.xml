@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.github.binarywang.demo.spring.mapper.user.WxMpUserMapper">
+	
+	<resultMap id="BaseResultMap" type="wxMpUser">
+		<result column="open_id" property="openId" jdbcType="VARCHAR" />
+		<result column="subscribe" property="subscribe" jdbcType="TINYINT" />
+		<result column="nickname" property="nickname" jdbcType="VARCHAR" />
+		<result column="sex" property="sex" jdbcType="VARCHAR" />
+		<result column="language" property="language" jdbcType="VARCHAR" />
+		<result column="city" property="city" jdbcType="VARCHAR" />
+		<result column="province" property="province" jdbcType="VARCHAR" />
+		<result column="country" property="country" jdbcType="VARCHAR" />
+		<result column="head_img_url" property="headImgUrl" jdbcType="VARCHAR" />
+		<result column="subscribe_time" property="subscribeTime" jdbcType="BIGINT" />
+		<result column="union_id" property="unionId" jdbcType="VARCHAR" />
+		<result column="sex_id" property="sexId" jdbcType="INTEGER" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="group_id" property="groupId" jdbcType="INTEGER" />
+		<result column="createdate" property="createdate" jdbcType="TIMESTAMP" />
+		
+	</resultMap>
+	
+	<select id="findList" resultMap="BaseResultMap">
+		select * from wx_mp_user
+	</select>
+	
+	<select id="selectByOpenId" parameterType="string" resultMap="BaseResultMap">
+		select * from wx_mp_user where open_id = #{openId}
+	</select>
+	
+	<insert id="insert" parameterType="wxMpUser" useGeneratedKeys="true" keyProperty="id">
+		insert into wx_mp_user(open_id, subscribe, nickname, sex, language, city, 
+		province, country, head_img_url, subscribe_time, union_id, sex_id, remark, group_id, createdate) 
+		values(#{openId}, #{subscribe}, #{nickname}, #{sex}, #{language}, #{city}, 
+		#{province}, #{country}, #{headImgUrl}, #{subscribeTime}, #{unionId}, #{sexId}, #{remark}, #{groupId}, NOW())
+	</insert>
+	
+	<update id="update" parameterType="wxMpUser">
+	update wx_mp_user 
+		<set>
+			<if test="subscribe != null">
+				subscribe = #{subscribe},
+			</if>
+			<if test="nickname != null and nickname != ''">
+				nickname = #{nickname},
+			</if>
+			<if test="sex != null and sex != ''">
+				sex = #{sex},
+			</if>
+			<if test="language != null and language != ''">
+				language = #{language},
+			</if>
+			<if test="city != null and city != ''">
+				city = #{city},
+			</if>
+			<if test="province != null and province != ''">
+				province = #{province},
+			</if>
+			<if test="country != null and country != ''">
+				country = #{country},
+			</if>
+			<if test="headImgUrl != null and headImgUrl != ''">
+				head_img_url = #{headImgUrl},
+			</if>
+			<if test="subscribeTime != null">
+				subscribe_time = #{subscribeTime},
+			</if>
+			<if test="sexId != null">
+				sex_id = #{sexId},
+			</if>
+		</set>
+		where open_id = #{openId}
+	</update>
+	
+	<update id="unsubscribe" parameterType="string">
+		update wx_mp_user set subscribe = 0 where open_id = #{openId}
+	</update>
+	
+	<delete id="delete" parameterType="string">
+		delete from wx_mp_user where open_id = #{openId}
+	</delete>
+</mapper>

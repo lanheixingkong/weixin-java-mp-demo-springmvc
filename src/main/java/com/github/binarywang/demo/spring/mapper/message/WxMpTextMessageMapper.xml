@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.github.binarywang.demo.spring.mapper.message.WxMpTextMessageMapper">
+	
+	<resultMap id="BaseResultMap" type="wxMpTextMessage">
+		<result column="id" property="id" jdbcType="BIGINT" />
+		<result column="to_user" property="toUser" jdbcType="VARCHAR" />
+		<result column="from_user" property="fromUser" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="BIGINT" />
+		<result column="msg_type" property="msgType" jdbcType="VARCHAR" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="msg_id" property="msgId" jdbcType="BIGINT" />
+		<result column="createdate" property="createdate" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<select id="findList" resultMap="BaseResultMap">
+		select * from wx_mp_text_message
+	</select>
+	
+	<insert id="insert" parameterType="wxMpTextMessage" useGeneratedKeys="true" keyProperty="id">
+		insert into wx_mp_text_message(to_user, from_user, create_time, msg_type, content, msg_id, createdate) 
+		values(#{toUser}, #{fromUser}, #{createTime}, #{msgType}, #{content}, #{msgId}, NOW())
+	</insert>
+	
+	<delete id="delete" parameterType="long">
+		delete from wx_mp_text_message where id = #{id}
+	</delete>
+</mapper>

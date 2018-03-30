@@ -10,7 +10,17 @@
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
   <import resource="classpath*:spring-service-bean.xml" />
+  <import resource="classpath*:applicationContext-db.xml" />
+  <import resource="classpath*:applicationContext-async.xml" />
 
   <util:properties id="wxProperties" location="classpath:/wx.properties" />
-
+  
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"
+          lazy-init="false">
+        <property name="locations">
+            <list>
+                <value>classpath*:jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
 </beans>
