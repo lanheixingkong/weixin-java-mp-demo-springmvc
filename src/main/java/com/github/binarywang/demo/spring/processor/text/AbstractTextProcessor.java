@@ -5,7 +5,8 @@ import java.util.Map;
 import me.chanjar.weixin.common.session.WxSessionManager;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
-import me.chanjar.weixin.mp.bean.message.category.WxMpTextMessage;
+
+import com.github.binarywang.demo.spring.entity.message.category.WxMpTextMessage;
 
 public abstract class AbstractTextProcessor {
 

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.github.binarywang.demo.spring.mapper.user.WxMpUserMapper">
 	
-	<resultMap id="BaseResultMap" type="wxMpUser">
+	<resultMap id="BaseResultMap" type="wxMpUserEx">
 		<result column="open_id" property="openId" jdbcType="VARCHAR" />
 		<result column="subscribe" property="subscribe" jdbcType="TINYINT" />
 		<result column="nickname" property="nickname" jdbcType="VARCHAR" />
@@ -29,14 +29,14 @@
 		select * from wx_mp_user where open_id = #{openId}
 	</select>
 	
-	<insert id="insert" parameterType="wxMpUser" useGeneratedKeys="true" keyProperty="id">
+	<insert id="insert" parameterType="wxMpUserEx" useGeneratedKeys="true" keyProperty="id">
 		insert into wx_mp_user(open_id, subscribe, nickname, sex, language, city, 
 		province, country, head_img_url, subscribe_time, union_id, sex_id, remark, group_id, createdate) 
 		values(#{openId}, #{subscribe}, #{nickname}, #{sex}, #{language}, #{city}, 
 		#{province}, #{country}, #{headImgUrl}, #{subscribeTime}, #{unionId}, #{sexId}, #{remark}, #{groupId}, NOW())
 	</insert>
 	
-	<update id="update" parameterType="wxMpUser">
+	<update id="update" parameterType="wxMpUserEx">
 	update wx_mp_user 
 		<set>
 			<if test="subscribe != null">

@@ -1,17 +1,17 @@
 package com.github.binarywang.demo.spring.mapper.user;
 
-import me.chanjar.weixin.mp.bean.result.WxMpUser;
+import com.github.binarywang.demo.spring.entity.user.WxMpUserEx;
 
 public interface WxMpUserMapper {
 
-	// List<WxMpUser> findList();
-	int insert(WxMpUser msg);
+	// List<WxMpUserEx> findList();
+	int insert(WxMpUserEx msg);
 
-	int update(WxMpUser msg);
+	int update(WxMpUserEx msg);
 	
 	int unsubscribe(String openId);
 
 	int delete(String openId);
 
-	WxMpUser selectByOpenId(String openId);
+	WxMpUserEx selectByOpenId(String openId);
 }

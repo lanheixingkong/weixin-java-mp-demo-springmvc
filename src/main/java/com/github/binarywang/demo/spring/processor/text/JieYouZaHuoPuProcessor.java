@@ -2,17 +2,17 @@ package com.github.binarywang.demo.spring.processor.text;
 
 import java.util.Map;
 
-import com.github.binarywang.demo.spring.builder.TextBuilder;
-import com.github.binarywang.demo.spring.constants.text.JieYouZaHuoDianState;
-import com.github.binarywang.demo.spring.constants.text.KeyWord;
-import com.github.binarywang.demo.spring.constants.text.WxSessionAttributeKey;
-import com.github.binarywang.demo.spring.service.WeixinService;
-
 import me.chanjar.weixin.common.session.WxSession;
 import me.chanjar.weixin.common.session.WxSessionManager;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
-import me.chanjar.weixin.mp.bean.message.category.WxMpTextMessage;
+
+import com.github.binarywang.demo.spring.builder.TextBuilder;
+import com.github.binarywang.demo.spring.constants.text.JieYouZaHuoDianState;
+import com.github.binarywang.demo.spring.constants.text.KeyWord;
+import com.github.binarywang.demo.spring.constants.text.WxSessionAttributeKey;
+import com.github.binarywang.demo.spring.entity.message.category.WxMpTextMessage;
+import com.github.binarywang.demo.spring.service.WeixinService;
 
 public class JieYouZaHuoPuProcessor extends AbstractTextProcessor {
 

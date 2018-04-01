@@ -2,15 +2,15 @@ package com.github.binarywang.demo.spring.processor.text.factory;
 
 import java.util.Map;
 
-import com.github.binarywang.demo.spring.constants.text.KeyWord;
-import com.github.binarywang.demo.spring.constants.text.WxSessionAttributeKey;
-import com.github.binarywang.demo.spring.processor.text.AbstractTextProcessor;
-import com.github.binarywang.demo.spring.processor.text.JieYouZaHuoPuProcessor;
-
 import me.chanjar.weixin.common.session.WxSession;
 import me.chanjar.weixin.common.session.WxSessionManager;
 import me.chanjar.weixin.mp.api.WxMpService;
-import me.chanjar.weixin.mp.bean.message.category.WxMpTextMessage;
+
+import com.github.binarywang.demo.spring.constants.text.KeyWord;
+import com.github.binarywang.demo.spring.constants.text.WxSessionAttributeKey;
+import com.github.binarywang.demo.spring.entity.message.category.WxMpTextMessage;
+import com.github.binarywang.demo.spring.processor.text.AbstractTextProcessor;
+import com.github.binarywang.demo.spring.processor.text.JieYouZaHuoPuProcessor;
 
 public class TextProcessFactory {
 

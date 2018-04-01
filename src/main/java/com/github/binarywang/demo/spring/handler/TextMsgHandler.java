@@ -4,19 +4,19 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.springframework.stereotype.Component;
-
-import com.github.binarywang.demo.spring.async.SaveDBAsync;
-import com.github.binarywang.demo.spring.builder.TextBuilder;
-import com.github.binarywang.demo.spring.processor.text.AbstractTextProcessor;
-import com.github.binarywang.demo.spring.processor.text.factory.TextProcessFactory;
-import com.github.binarywang.demo.spring.service.WeixinService;
-
 import me.chanjar.weixin.common.session.WxSessionManager;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
-import me.chanjar.weixin.mp.bean.message.category.WxMpTextMessage;
+
+import org.springframework.stereotype.Component;
+
+import com.github.binarywang.demo.spring.async.SaveDBAsync;
+import com.github.binarywang.demo.spring.builder.TextBuilder;
+import com.github.binarywang.demo.spring.entity.message.category.WxMpTextMessage;
+import com.github.binarywang.demo.spring.processor.text.AbstractTextProcessor;
+import com.github.binarywang.demo.spring.processor.text.factory.TextProcessFactory;
+import com.github.binarywang.demo.spring.service.WeixinService;
 
 /**
  * @author Binary Wang

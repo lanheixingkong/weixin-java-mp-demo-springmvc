@@ -5,11 +5,10 @@ import javax.annotation.Resource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import com.github.binarywang.demo.spring.entity.message.category.WxMpTextMessage;
+import com.github.binarywang.demo.spring.entity.user.WxMpUserEx;
 import com.github.binarywang.demo.spring.mapper.message.WxMpTextMessageMapper;
 import com.github.binarywang.demo.spring.mapper.user.WxMpUserMapper;
-
-import me.chanjar.weixin.mp.bean.message.category.WxMpTextMessage;
-import me.chanjar.weixin.mp.bean.result.WxMpUser;
 
 @Component
 public class SaveDBAsync {
@@ -21,8 +20,8 @@ public class SaveDBAsync {
 	private WxMpTextMessageMapper wxMpTextMessageMapper;
 
 	@Async
-	public void saveWxMpUser(WxMpUser user) {
-		WxMpUser wmu = wxMpUserMapper.selectByOpenId(user.getOpenId());
+	public void saveWxMpUser(WxMpUserEx user) {
+		WxMpUserEx wmu = wxMpUserMapper.selectByOpenId(user.getOpenId());
 		if (wmu != null) {
 			wxMpUserMapper.update(user);
 		} else {
@@ -34,9 +33,9 @@ public class SaveDBAsync {
 	public void saveWxMpTextMessage(WxMpTextMessage msg) {
 		wxMpTextMessageMapper.insert(msg);
 		String openId = msg.getFromUser();
-		WxMpUser wmu = wxMpUserMapper.selectByOpenId(openId);
+		WxMpUserEx wmu = wxMpUserMapper.selectByOpenId(openId);
 		if (wmu == null) {
-			WxMpUser user = new WxMpUser();
+			WxMpUserEx user = new WxMpUserEx();
 			user.setOpenId(openId);
 			user.setSubscribe(true);
 			wxMpUserMapper.insert(user);

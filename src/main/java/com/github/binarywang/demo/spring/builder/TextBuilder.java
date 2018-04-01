@@ -1,11 +1,11 @@
 package com.github.binarywang.demo.spring.builder;
 
-import com.github.binarywang.demo.spring.service.WeixinService;
-
 import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutTextMessage;
-import me.chanjar.weixin.mp.bean.message.category.WxMpTextMessage;
+
+import com.github.binarywang.demo.spring.entity.message.category.WxMpTextMessage;
+import com.github.binarywang.demo.spring.service.WeixinService;
 
 /**
  * 
