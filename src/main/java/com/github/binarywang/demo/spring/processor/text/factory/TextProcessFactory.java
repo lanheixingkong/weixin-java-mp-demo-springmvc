@@ -10,25 +10,25 @@ import com.github.binarywang.demo.spring.constants.text.KeyWord;
 import com.github.binarywang.demo.spring.constants.text.WxSessionAttributeKey;
 import com.github.binarywang.demo.spring.entity.message.category.WxMpTextMessage;
 import com.github.binarywang.demo.spring.processor.text.AbstractTextProcessor;
-import com.github.binarywang.demo.spring.processor.text.JieYouZaHuoPuProcessor;
+import com.github.binarywang.demo.spring.processor.text.JieYouZaHuoDianProcessor;
 
 public class TextProcessFactory {
 
 	public static AbstractTextProcessor create(WxMpTextMessage msg, Map<String, Object> context,
 			WxMpService wxMpService, WxSessionManager sessionManager) {
 
-		if (isJieYouZaHuoPu(msg, context, wxMpService, sessionManager)) {
-			return new JieYouZaHuoPuProcessor();
+		if (isJieYouZaHuoDian(msg, context, wxMpService, sessionManager)) {
+			return new JieYouZaHuoDianProcessor();
 		}
 
 		return null;
 	}
 
-	private static boolean isJieYouZaHuoPu(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private static boolean isJieYouZaHuoDian(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 		String content = msg.getContent();
-		if (KeyWord.JIE_YOU_ZA_HUO_DIAN.equals(content) || KeyWord.SEE_REPLY.equals(content)) {
-
+		if (KeyWord.JieYouZaHuoDian.JIE_YOU_ZA_HUO_DIAN.equals(content)
+				|| KeyWord.JieYouZaHuoDian.SEE_REPLY.equals(content)) {
 			return true;
 		} else {
 			WxSession session = sessionManager.getSession(msg.getFromUser());
