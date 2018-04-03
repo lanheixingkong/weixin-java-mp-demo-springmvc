@@ -2,15 +2,15 @@ package com.github.binarywang.demo.spring.processor.text.factory;
 
 import java.util.Map;
 
-import me.chanjar.weixin.common.session.WxSession;
-import me.chanjar.weixin.common.session.WxSessionManager;
-import me.chanjar.weixin.mp.api.WxMpService;
-
 import com.github.binarywang.demo.spring.constants.text.KeyWord;
 import com.github.binarywang.demo.spring.constants.text.WxSessionAttributeKey;
 import com.github.binarywang.demo.spring.entity.message.category.WxMpTextMessage;
 import com.github.binarywang.demo.spring.processor.text.AbstractTextProcessor;
-import com.github.binarywang.demo.spring.processor.text.JieYouZaHuoDianProcessor;
+import com.github.binarywang.demo.spring.utils.SpringContextHolder;
+
+import me.chanjar.weixin.common.session.WxSession;
+import me.chanjar.weixin.common.session.WxSessionManager;
+import me.chanjar.weixin.mp.api.WxMpService;
 
 public class TextProcessFactory {
 
@@ -18,7 +18,7 @@ public class TextProcessFactory {
 			WxMpService wxMpService, WxSessionManager sessionManager) {
 
 		if (isJieYouZaHuoDian(msg, context, wxMpService, sessionManager)) {
-			return new JieYouZaHuoDianProcessor();
+			return SpringContextHolder.getBean("jieYouZaHuoDianProcessor");
 		}
 
 		return null;

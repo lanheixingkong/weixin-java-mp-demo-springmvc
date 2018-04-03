@@ -30,6 +30,7 @@ CREATE TABLE `jieyou_counseling` (
   `state` tinyint(10) NOT NULL DEFAULT '1',
   `createdate` datetime NOT NULL,
   `answerdate` datetime DEFAULT NULL,
+  `waitdate` datetime DEFAULT NULL,
   `rel_id` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

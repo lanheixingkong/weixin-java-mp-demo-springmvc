@@ -19,9 +19,10 @@ public class Counseling implements Serializable {
 	private String toUserName;
 	private String question;
 	private String answer;
-	private int state;
+	private int state;//1 提问 2 待回答 3 回答 4 追问 5 追答 6 结束
 	private Date createdate;
 	private Date answerdate;
+	private Date waitdate;
 	private Long relId;
 	
 }

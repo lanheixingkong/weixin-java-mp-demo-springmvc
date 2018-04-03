@@ -12,4 +12,11 @@ public class JieYouZaHuoDianState {
 	public static final String REPLY_LETTER = "REPLY_LETTER";
 	public static final String REREPLY_LETTER = "REREPLY_LETTER";
 	
+	
+	public static final int COUNSELING_STATE_QUESTION = 1;
+	public static final int COUNSELING_STATE_WAIT_ANSWER = 2;
+	public static final int COUNSELING_STATE_ANSWER = 3;
+	public static final int COUNSELING_STATE_ADD_QUESTION = 4;
+	public static final int COUNSELING_STATE_ADD_ANSWER = 5;
+	public static final int COUNSELING_STATE_FINISHED = 6;
 }

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="com.github.binarywang.demo.spring.mapper.jieyouzahuodian.CounselingMapper">
+
+	<resultMap id="BaseResultMap" type="counseling">
+		<result column="id" property="id" jdbcType="BIGINT" />
+		<result column="from_user_id" property="fromUserId" jdbcType="VARCHAR" />
+		<result column="from_user_name" property="fromUserName"
+			jdbcType="VARCHAR" />
+		<result column="to_user_id" property="toUserId" jdbcType="VARCHAR" />
+		<result column="to_user_name" property="toUserName" jdbcType="VARCHAR" />
+		<result column="question" property="question" jdbcType="VARCHAR" />
+		<result column="answer" property="answer" jdbcType="VARCHAR" />
+		<result column="state" property="state" jdbcType="TINYINT" />
+		<result column="createdate" property="createdate" jdbcType="TIMESTAMP" />
+		<result column="answerdate" property="answerdate" jdbcType="TIMESTAMP" />
+		<result column="waitdate" property="waitdate" jdbcType="TIMESTAMP" />
+		<result column="rel_id" property="relId" jdbcType="BIGINT" />
+	</resultMap>
+
+	<select id="findList" resultMap="BaseResultMap">
+		select * from jieyou_counseling
+	</select>
+
+	<select id="selectUnfinishedCounselingByFromUserId" resultMap="BaseResultMap"
+		parameterType="string">
+		select * from jieyou_counseling where from_user_id =
+		#{fromUserId} and state &lt; 5
+	</select>
+
+	<select id="selectUnfinishedAnswerCountByToUserId" resultMap="BaseResultMap"
+		parameterType="string">
+		select count(*) from
+		jieyou_counseling where
+		to_user_id = #{toUserId} and state &lt; 5
+	</select>
+
+	<select id="selectOneNotAnswerCounseling" resultMap="BaseResultMap"
+		parameterType="string">
+		select * from jieyou_counseling where from_user_id !=
+		#{fromUserId} and state = 1 limit 1
+	</select>
+
+	<select id="selectById" resultMap="BaseResultMap" parameterType="long">
+		select * from jieyou_counseling where id = #{id}
+	</select>
+
+	<update id="updateWaitAnswerState">
+		update jieyou_counseling set state = 2, to_user_id =
+		#{toUserId}, waitdate = NOW()
+		where id = #{id} and state = 1
+	</update>
+
+	<insert id="insert" parameterType="counseling" useGeneratedKeys="true"
+		keyProperty="id">
+		insert into jieyou_counseling(from_user_id,
+		from_user_name, question, state, createdate)
+		values(#{fromUserId},
+		#{fromUserName}, #{question}, 1, NOW())
+	</insert>
+
+	<update id="updateAnswer" parameterType="counseling">
+		update jieyou_counseling
+		set to_user_id = #{toUserId}, to_user_name = #{toUserName},
+		answer =
+		#{answer}, state = 2, answerdate = NOW()
+		where id = #{id}
+	</update>
+
+	<update id="updateState" parameterType="counseling">
+		update jieyou_counseling set state = #{state}
+		<if test="relId != null and relId != 0">
+			, rel_id = #{relId}
+		</if>
+		where id = #{id}
+	</update>
+
+</mapper>
