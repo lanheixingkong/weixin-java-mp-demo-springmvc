@@ -28,7 +28,8 @@ public class TextProcessFactory {
 			WxSessionManager sessionManager) {
 		String content = msg.getContent();
 		if (KeyWord.JieYouZaHuoDian.JIE_YOU_ZA_HUO_DIAN.equals(content)
-				|| KeyWord.JieYouZaHuoDian.SEE_REPLY.equals(content)) {
+				|| KeyWord.JieYouZaHuoDian.SEE_REPLY.equals(content)
+				|| KeyWord.JieYouZaHuoDian.SEE_ADD_QUESTION.equals(content)) {
 			return true;
 		} else {
 			WxSession session = sessionManager.getSession(msg.getFromUser());

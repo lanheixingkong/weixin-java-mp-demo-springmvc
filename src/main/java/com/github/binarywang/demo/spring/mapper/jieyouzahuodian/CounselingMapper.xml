@@ -26,30 +26,49 @@
 	<select id="selectUnfinishedCounselingByFromUserId" resultMap="BaseResultMap"
 		parameterType="string">
 		select * from jieyou_counseling where from_user_id =
-		#{fromUserId} and state &lt; 5
+		#{fromUserId} and state &lt; 6
 	</select>
 
-	<select id="selectUnfinishedAnswerCountByToUserId" resultMap="BaseResultMap"
+	<select id="selectUnfinishedAnswerCountByToUserId" resultType="int"
 		parameterType="string">
 		select count(*) from
 		jieyou_counseling where
-		to_user_id = #{toUserId} and state &lt; 5
+		to_user_id = #{toUserId} and state &lt; 6
 	</select>
 
 	<select id="selectOneNotAnswerCounseling" resultMap="BaseResultMap"
 		parameterType="string">
-		select * from jieyou_counseling where from_user_id !=
-		#{fromUserId} and state = 1 limit 1
+		select * from jieyou_counseling b JOIN (SELECT CEIL(MAX(id)*RAND()) AS id FROM jieyou_counseling where from_user_id != #{fromUserId} and state = 1) AS m 
+		ON B.id >= m.id where from_user_id != #{fromUserId} and state = 1 limit 1
+	</select>
+	
+	<select id="selectWaitAnswerCounselingByToUserId" resultMap="BaseResultMap"
+		parameterType="string">
+		select * from jieyou_counseling where to_user_id =
+		#{toUserId} and state = 2 limit 1
 	</select>
 
 	<select id="selectById" resultMap="BaseResultMap" parameterType="long">
 		select * from jieyou_counseling where id = #{id}
+	</select>
+	
+	<select id="selectAddQuestionCountByToUserId" resultType="int" parameterType="string">
+		select count(*) from jieyou_counseling where to_user_id = #{toUserId} and state = 4
+	</select>
+	
+	<select id="findAddQuestionByToUserId" resultMap="BaseResultMap" parameterType="string">
+		select * from jieyou_counseling where to_user_id = #{toUserId} and state = 4
 	</select>
 
 	<update id="updateWaitAnswerState">
 		update jieyou_counseling set state = 2, to_user_id =
 		#{toUserId}, waitdate = NOW()
 		where id = #{id} and state = 1
+	</update>
+	
+	<update id="revertWaitAnswerState">
+		update jieyou_counseling set state = 1, to_user_id = null, waitdate = null
+		where id = #{id} and state = 2 and to_user_id = #{toUserId}
 	</update>
 
 	<insert id="insert" parameterType="counseling" useGeneratedKeys="true"
@@ -74,6 +93,11 @@
 			, rel_id = #{relId}
 		</if>
 		where id = #{id}
+	</update>
+	
+	<update id="finishCounselingByFromUserId" parameterType="string">
+		update jieyou_counseling set state = 6
+		where from_user_id = #{fromUserName} and state &lt; 6 
 	</update>
 
 </mapper>
