@@ -33,4 +33,6 @@ public interface CounselingMapper {
 	List<Counseling> findAddQuestionByToUserId(String toUserId);
 	
 	Integer selectAddQuestionCountByToUserId(String toUserId);
+
+	void deleteTimeoutWaitState(int timeout);
 }

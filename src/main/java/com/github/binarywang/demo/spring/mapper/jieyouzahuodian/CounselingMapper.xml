@@ -99,5 +99,10 @@
 		update jieyou_counseling set state = 6
 		where from_user_id = #{fromUserName} and state &lt; 6 
 	</update>
+	
+	<update id="deleteTimeoutWaitState" parameterType="int">
+		update jieyou_counseling set state = 1, to_user_id = null, waitdate = null
+		where state = 2 and TIMESTAMPDIFF(MINUTE,waitdate, NOW()) &gt; #{timeout}
+	</update>
 
 </mapper>
