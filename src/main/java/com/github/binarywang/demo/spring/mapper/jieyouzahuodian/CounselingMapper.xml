@@ -83,7 +83,7 @@
 		update jieyou_counseling
 		set to_user_id = #{toUserId}, to_user_name = #{toUserName},
 		answer =
-		#{answer}, state = 2, answerdate = NOW()
+		#{answer}, state = 3, answerdate = NOW()
 		where id = #{id}
 	</update>
 
