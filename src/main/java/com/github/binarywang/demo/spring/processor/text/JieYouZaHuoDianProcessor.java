@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 
+import com.github.binarywang.demo.spring.async.EmailSender;
 import com.github.binarywang.demo.spring.builder.TextBuilder;
 import com.github.binarywang.demo.spring.constants.text.JieYouZaHuoDian;
 import com.github.binarywang.demo.spring.constants.text.KeyWord;
@@ -43,6 +44,9 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 	@Resource
 	private AddContentMapper addContentMapper;
 
+	@Resource
+	private EmailSender emailSender;
+
 	@Override
 	public WxMpXmlOutMessage processor(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
@@ -52,13 +56,16 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 				: (String) session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE);
 
 		if (KeyWord.JieYouZaHuoDian.JIE_YOU_ZA_HUO_DIAN.equals(content)) {
+			sendNotice("有人进入解忧杂货店");
 			return start(msg, context, wxMpService, sessionManager);
 
 		} else if (KeyWord.JieYouZaHuoDian.SEE_ADD_QUESTION.equals(content)) {
 			// 查看追问
+			sendNotice("有人查看追问");
 			return seeAddQuestion(msg, context, wxMpService, sessionManager);
 		} else if (KeyWord.JieYouZaHuoDian.SEE_REPLY.equals(content)) {
 			// 查看回信
+			sendNotice("有人查看回信");
 			return seeReply(msg, context, wxMpService, sessionManager);
 		} else if (JieYouZaHuoDian.SIGN_UP.equals(state)) {
 			return signUp(msg, context, wxMpService, sessionManager);
@@ -73,7 +80,6 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 
 			return endWriteLetter(msg, context, wxMpService, sessionManager);
 		} else if (JieYouZaHuoDian.REWRITE_LETTER.equals(state)) {
-
 			return rewriteLetter(msg, context, wxMpService, sessionManager, false);
 		} else if (JieYouZaHuoDian.READ_LETTER.equals(state)) {
 
@@ -276,6 +282,7 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE);
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT);
+		sendNotice("有人追问了");
 		return new TextBuilder().build(jieYouZaHuoDianDialog.endWriteLetter(), msg, (WeixinService) wxMpService);
 	}
 
@@ -440,6 +447,7 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE);
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT);
+		sendNotice("有人写信进来了");
 		return new TextBuilder().build(jieYouZaHuoDianDialog.endWriteLetter(), msg, (WeixinService) wxMpService);
 	}
 
@@ -605,4 +613,10 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 		return new DateTime(date).toString(datePattern);
 	}
 
+	private void sendNotice(String content) {
+		String to = "519356442@qq.com";
+		String subject = "有人进店了";
+		emailSender.send(to, subject, content);
+
+	}
 }
