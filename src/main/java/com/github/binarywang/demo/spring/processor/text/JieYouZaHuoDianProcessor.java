@@ -48,24 +48,27 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 	private EmailSender emailSender;
 
 	@Override
-	public WxMpXmlOutMessage processor(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	public WxMpXmlOutMessage processor(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 		String content = msg.getContent();
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		String state = session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE) == null ? ""
-				: (String) session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE);
+		String state = session
+				.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE) == null ? ""
+				: (String) session
+						.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE);
 
 		if (KeyWord.JieYouZaHuoDian.JIE_YOU_ZA_HUO_DIAN.equals(content)) {
-			sendNotice("有人进入解忧杂货店");
+			sendNotice("进入解忧杂货店", sessionManager, msg.getFromUser());
 			return start(msg, context, wxMpService, sessionManager);
 
 		} else if (KeyWord.JieYouZaHuoDian.SEE_ADD_QUESTION.equals(content)) {
 			// 查看追问
-			sendNotice("有人查看追问");
+			sendNotice("查看追问", sessionManager, msg.getFromUser());
 			return seeAddQuestion(msg, context, wxMpService, sessionManager);
 		} else if (KeyWord.JieYouZaHuoDian.SEE_REPLY.equals(content)) {
 			// 查看回信
-			sendNotice("有人查看回信");
+			sendNotice("查看回信", sessionManager, msg.getFromUser());
 			return seeReply(msg, context, wxMpService, sessionManager);
 		} else if (JieYouZaHuoDian.SIGN_UP.equals(state)) {
 			return signUp(msg, context, wxMpService, sessionManager);
@@ -80,7 +83,8 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 
 			return endWriteLetter(msg, context, wxMpService, sessionManager);
 		} else if (JieYouZaHuoDian.REWRITE_LETTER.equals(state)) {
-			return rewriteLetter(msg, context, wxMpService, sessionManager, false);
+			return rewriteLetter(msg, context, wxMpService, sessionManager,
+					false);
 		} else if (JieYouZaHuoDian.READ_LETTER.equals(state)) {
 
 			return confirmAnswer(msg, context, wxMpService, sessionManager);
@@ -92,7 +96,8 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 			return endReplyLetter(msg, context, wxMpService, sessionManager);
 		} else if (JieYouZaHuoDian.REREPLY_LETTER.equals(state)) {
 
-			return rereplyLetter(msg, context, wxMpService, sessionManager, false);
+			return rereplyLetter(msg, context, wxMpService, sessionManager,
+					false);
 		} else if (JieYouZaHuoDian.FROM_USER_REPLY.equals(state)) {
 
 			return fromUserReply(msg, context, wxMpService, sessionManager);
@@ -104,47 +109,78 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 			return confirmAddQuestion(msg, context, wxMpService, sessionManager);
 		} else if (JieYouZaHuoDian.REWRITE_ADD_QUESTION.equals(state)) {
 
-			return saveAddQuestion(msg, context, wxMpService, sessionManager, false);
+			return saveAddQuestion(msg, context, wxMpService, sessionManager,
+					false);
 		} else if (JieYouZaHuoDian.SELECT_ADD_QUESTION.equals(state)) {
 
 			return selectAddQuestion(msg, context, wxMpService, sessionManager);
 		} else if (JieYouZaHuoDian.SEE_ADD_QUESTION.equals(state)) {
 
-			return confirmReplyAddQuestion(msg, context, wxMpService, sessionManager);
+			return confirmReplyAddQuestion(msg, context, wxMpService,
+					sessionManager);
 		} else if (JieYouZaHuoDian.REPLY_ADD_QUESTION.equals(state)) {
 
 			return replyAddQuestion(msg, context, wxMpService, sessionManager);
 		} else if (JieYouZaHuoDian.CONFIRM_REPLY_ADD_QUESTION.equals(state)) {
 
-			return endReplyAddQuestion(msg, context, wxMpService, sessionManager);
+			return endReplyAddQuestion(msg, context, wxMpService,
+					sessionManager);
 		} else if (JieYouZaHuoDian.REREPLY_ADD_QUESTION.equals(state)) {
 
-			return rereplyAddQuestion(msg, context, wxMpService, sessionManager, false);
+			return rereplyAddQuestion(msg, context, wxMpService,
+					sessionManager, false);
 		}
 		return null;
 	}
 
-	private WxMpXmlOutMessage endReplyAddQuestion(WxMpTextMessage msg, Map<String, Object> context,
-			WxMpService wxMpService, WxSessionManager sessionManager) {
+	private String USER = "USER";
+
+	private WxMpUserEx getSessionUser(WxSessionManager sessionManager,
+			String openId) {
+		WxSession session = sessionManager.getSession(openId);
+		Object obj = session.getAttribute(USER);
+		WxMpUserEx user = null;
+		if (obj == null
+				|| StringUtils.isBlank(((WxMpUserEx) obj).getNickname())) {
+			user = wxMpUserMapper.selectByOpenId(openId);
+			session.setAttribute(USER, user);
+		} else {
+			user = (WxMpUserEx) obj;
+		}
+		return user;
+	}
+
+	private WxMpXmlOutMessage endReplyAddQuestion(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
+			WxSessionManager sessionManager) {
 		String content = msg.getContent();
 		if (KeyWord.TWO.equals(content)) {
 			WxSession session = sessionManager.getSession(msg.getFromUser());
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.REREPLY_ADD_QUESTION);
-			return new TextBuilder().build(jieYouZaHuoDianDialog.rereplyLetter(), msg, (WeixinService) wxMpService);
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+					JieYouZaHuoDian.REREPLY_ADD_QUESTION);
+			return new TextBuilder().build(
+					jieYouZaHuoDianDialog.rereplyLetter(), msg,
+					(WeixinService) wxMpService);
 		}
 
-		return rereplyAddQuestion(msg, context, wxMpService, sessionManager, true);
+		return rereplyAddQuestion(msg, context, wxMpService, sessionManager,
+				true);
 	}
 
-	private WxMpXmlOutMessage rereplyAddQuestion(WxMpTextMessage msg, Map<String, Object> context,
-			WxMpService wxMpService, WxSessionManager sessionManager, boolean isGetSession) {
+	private WxMpXmlOutMessage rereplyAddQuestion(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
+			WxSessionManager sessionManager, boolean isGetSession) {
 		// 保存回答
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		Long id = (Long) session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
-		String content = isGetSession ? (String) session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT)
+		Long id = (Long) session
+				.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
+		String content = isGetSession ? (String) session
+				.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT)
 				: msg.getContent();
 		Counseling counseling = counselingMapper.selectById(id);
-		if (JieYouZaHuoDian.COUNSELING_STATE_ADD_QUESTION == counseling.getState()) {
+		if (JieYouZaHuoDian.COUNSELING_STATE_ADD_QUESTION == counseling
+				.getState()) {
 
 			AddContent addContent = new AddContent();
 			addContent.setContent(content);
@@ -160,58 +196,79 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 			session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE);
 			session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
 			session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT);
-			return new TextBuilder().build(jieYouZaHuoDianDialog.endReplyLetter(), msg, (WeixinService) wxMpService);
-		}
-
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.INTRO);
-		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
-		return new TextBuilder().build(jieYouZaHuoDianDialog.timeout(), msg, (WeixinService) wxMpService);
-	}
-
-	private WxMpXmlOutMessage replyAddQuestion(WxMpTextMessage msg, Map<String, Object> context,
-			WxMpService wxMpService, WxSessionManager sessionManager) {
-		String content = msg.getContent();
-		WxSession session = sessionManager.getSession(msg.getFromUser());
-		Long id = (Long) session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
-		Counseling counseling = counselingMapper.selectById(id);
-		if (JieYouZaHuoDian.COUNSELING_STATE_ADD_QUESTION == counseling.getState()) {
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
-					JieYouZaHuoDian.CONFIRM_REPLY_ADD_QUESTION);
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT, content);
-
 			return new TextBuilder().build(
-					jieYouZaHuoDianDialog.replyLetter(counseling.getFromUserName(), content, getLetterDate()), msg,
+					jieYouZaHuoDianDialog.endReplyLetter(), msg,
 					(WeixinService) wxMpService);
 		}
 
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.INTRO);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.INTRO);
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
-		return new TextBuilder().build(jieYouZaHuoDianDialog.timeout(), msg, (WeixinService) wxMpService);
+		return new TextBuilder().build(jieYouZaHuoDianDialog.timeout(), msg,
+				(WeixinService) wxMpService);
 	}
 
-	private WxMpXmlOutMessage confirmReplyAddQuestion(WxMpTextMessage msg, Map<String, Object> context,
-			WxMpService wxMpService, WxSessionManager sessionManager) {
+	private WxMpXmlOutMessage replyAddQuestion(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
+			WxSessionManager sessionManager) {
+		String content = msg.getContent();
+		WxSession session = sessionManager.getSession(msg.getFromUser());
+		Long id = (Long) session
+				.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
+		Counseling counseling = counselingMapper.selectById(id);
+		if (JieYouZaHuoDian.COUNSELING_STATE_ADD_QUESTION == counseling
+				.getState()) {
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+					JieYouZaHuoDian.CONFIRM_REPLY_ADD_QUESTION);
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT, content);
+
+			return new TextBuilder().build(jieYouZaHuoDianDialog.replyLetter(
+					counseling.getFromUserName(), content, getLetterDate()),
+					msg, (WeixinService) wxMpService);
+		}
+
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.INTRO);
+		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
+		return new TextBuilder().build(jieYouZaHuoDianDialog.timeout(), msg,
+				(WeixinService) wxMpService);
+	}
+
+	private WxMpXmlOutMessage confirmReplyAddQuestion(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
+			WxSessionManager sessionManager) {
 		if (KeyWord.ONE.equals(msg.getContent())) {
 			// 回信
 			WxSession session = sessionManager.getSession(msg.getFromUser());
-			Long id = (Long) session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
+			Long id = (Long) session
+					.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
 			Counseling counseling = counselingMapper.selectById(id);
-			if (JieYouZaHuoDian.COUNSELING_STATE_ADD_QUESTION == counseling.getState()) {
-				session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+			if (JieYouZaHuoDian.COUNSELING_STATE_ADD_QUESTION == counseling
+					.getState()) {
+				session.setAttribute(
+						WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
 						JieYouZaHuoDian.REPLY_ADD_QUESTION);
-				return new TextBuilder().build(jieYouZaHuoDianDialog.confirmAnswer(), msg, (WeixinService) wxMpService);
+				return new TextBuilder().build(
+						jieYouZaHuoDianDialog.confirmAnswer(), msg,
+						(WeixinService) wxMpService);
 			}
 
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.INTRO);
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+					JieYouZaHuoDian.INTRO);
 			session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
-			return new TextBuilder().build(jieYouZaHuoDianDialog.timeout(), msg, (WeixinService) wxMpService);
+			return new TextBuilder().build(jieYouZaHuoDianDialog.timeout(),
+					msg, (WeixinService) wxMpService);
 		}
 
 		return start(msg, context, wxMpService, sessionManager);
 	}
 
-	private WxMpXmlOutMessage selectAddQuestion(WxMpTextMessage msg, Map<String, Object> context,
-			WxMpService wxMpService, WxSessionManager sessionManager) {
+	private WxMpXmlOutMessage selectAddQuestion(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
+			WxSessionManager sessionManager) {
 		String content = msg.getContent();
 		int num = 1;
 		try {
@@ -219,55 +276,74 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 		} catch (Exception e) {
 		}
 
-		List<Counseling> list = counselingMapper.findAddQuestionByToUserId(msg.getFromUser());
+		List<Counseling> list = counselingMapper.findAddQuestionByToUserId(msg
+				.getFromUser());
 		if (num < 1 || num > list.size()) {
 			num = 1;
 		}
 
 		Counseling counseling = list.get(num - 1);
-		AddContent addContent = addContentMapper.selectById(counseling.getRelId());
+		AddContent addContent = addContentMapper.selectById(counseling
+				.getRelId());
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.SEE_ADD_QUESTION);
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER, counseling.getId());
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.SEE_ADD_QUESTION);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER,
+				counseling.getId());
 
-		return new TextBuilder().build(jieYouZaHuoDianDialog.selectAddQuestion(addContent.getContent(),
-				counseling.getFromUserName(), getLetterDate(addContent.getCreatedate())), msg,
+		return new TextBuilder().build(jieYouZaHuoDianDialog.selectAddQuestion(
+				addContent.getContent(), counseling.getFromUserName(),
+				getLetterDate(addContent.getCreatedate())), msg,
 				(WeixinService) wxMpService);
 	}
 
-	private WxMpXmlOutMessage seeAddQuestion(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage seeAddQuestion(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 
-		Integer count = counselingMapper.selectAddQuestionCountByToUserId(msg.getFromUser());
+		Integer count = counselingMapper.selectAddQuestionCountByToUserId(msg
+				.getFromUser());
 		if (count == null || count == 0) {
-			return new TextBuilder().build(jieYouZaHuoDianDialog.noAddQuestion(), msg, (WeixinService) wxMpService);
+			return new TextBuilder().build(
+					jieYouZaHuoDianDialog.noAddQuestion(), msg,
+					(WeixinService) wxMpService);
 		}
 
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.SELECT_ADD_QUESTION);
-		return new TextBuilder().build(jieYouZaHuoDianDialog.selectAddQuestion(count), msg,
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.SELECT_ADD_QUESTION);
+		return new TextBuilder().build(
+				jieYouZaHuoDianDialog.selectAddQuestion(count), msg,
 				(WeixinService) wxMpService);
 	}
 
-	private WxMpXmlOutMessage confirmAddQuestion(WxMpTextMessage msg, Map<String, Object> context,
-			WxMpService wxMpService, WxSessionManager sessionManager) {
+	private WxMpXmlOutMessage confirmAddQuestion(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
+			WxSessionManager sessionManager) {
 		String content = msg.getContent();
 		if (KeyWord.TWO.equals(content)) {
 			WxSession session = sessionManager.getSession(msg.getFromUser());
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.REWRITE_ADD_QUESTION);
-			return new TextBuilder().build(jieYouZaHuoDianDialog.rewriteLetter(), msg, (WeixinService) wxMpService);
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+					JieYouZaHuoDian.REWRITE_ADD_QUESTION);
+			return new TextBuilder().build(
+					jieYouZaHuoDianDialog.rewriteLetter(), msg,
+					(WeixinService) wxMpService);
 		}
 
 		return saveAddQuestion(msg, context, wxMpService, sessionManager, true);
 	}
 
-	private WxMpXmlOutMessage saveAddQuestion(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage saveAddQuestion(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager, boolean isGetSession) {
 		// 保存提问
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		String content = isGetSession ? (String) session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT)
+		String content = isGetSession ? (String) session
+				.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT)
 				: msg.getContent();
-		Counseling counseling = counselingMapper.selectUnfinishedCounselingByFromUserId(msg.getFromUser());
+		Counseling counseling = counselingMapper
+				.selectUnfinishedCounselingByFromUserId(msg.getFromUser());
 
 		AddContent addContent = new AddContent();
 		addContent.setContent(content);
@@ -282,33 +358,42 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE);
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT);
-		sendNotice("有人追问了");
-		return new TextBuilder().build(jieYouZaHuoDianDialog.endWriteLetter(), msg, (WeixinService) wxMpService);
+		sendNotice("追问了", sessionManager, msg.getFromUser());
+		return new TextBuilder().build(jieYouZaHuoDianDialog.endWriteLetter(),
+				msg, (WeixinService) wxMpService);
 	}
 
-	private WxMpXmlOutMessage addQuestion(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage addQuestion(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 		String content = msg.getContent();
 		WxMpUserEx user = wxMpUserMapper.selectByOpenId(msg.getFromUser());
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.CONFIRM_ADD_QUESTION);
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT, content);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.CONFIRM_ADD_QUESTION);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT,
+				content);
 
 		return new TextBuilder().build(
-				jieYouZaHuoDianDialog.confirmWriteLetter(content, user.getNickname(), getLetterDate()), msg,
+				jieYouZaHuoDianDialog.confirmWriteLetter(content,
+						user.getNickname(), getLetterDate()), msg,
 				(WeixinService) wxMpService);
 	}
 
-	private WxMpXmlOutMessage fromUserReply(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage fromUserReply(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 
 		String content = msg.getContent();
 		if (KeyWord.ONE.equals(content)) {
 			// 继续追问
 			WxSession session = sessionManager.getSession(msg.getFromUser());
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.ADD_QUESTION);
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+					JieYouZaHuoDian.ADD_QUESTION);
 
-			return new TextBuilder().build(jieYouZaHuoDianDialog.addQuestion(), msg, (WeixinService) wxMpService);
+			return new TextBuilder().build(jieYouZaHuoDianDialog.addQuestion(),
+					msg, (WeixinService) wxMpService);
 		} else if (KeyWord.TWO.equals(content)) {
 			// 结束询问
 			WxSession session = sessionManager.getSession(msg.getFromUser());
@@ -317,67 +402,85 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 
 			counselingMapper.finishCounselingByFromUserId(msg.getFromUser());
 
-			return new TextBuilder().build(jieYouZaHuoDianDialog.finishCounseling(), msg, (WeixinService) wxMpService);
+			return new TextBuilder().build(
+					jieYouZaHuoDianDialog.finishCounseling(), msg,
+					(WeixinService) wxMpService);
 		}
 		return null;
 	}
 
-	private WxMpXmlOutMessage seeReply(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage seeReply(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
-		Counseling counseling = counselingMapper.selectUnfinishedCounselingByFromUserId(msg.getFromUser());
+		Counseling counseling = counselingMapper
+				.selectUnfinishedCounselingByFromUserId(msg.getFromUser());
 		if (counseling == null) {
-			return new TextBuilder().build(jieYouZaHuoDianDialog.noQuestion(), msg, (WeixinService) wxMpService);
+			return new TextBuilder().build(jieYouZaHuoDianDialog.noQuestion(),
+					msg, (WeixinService) wxMpService);
 		}
 		String answer = null;
 		Date answerdate = null;
 		int state = counseling.getState();
 		if (state == JieYouZaHuoDian.COUNSELING_STATE_ADD_ANSWER) {
-			AddContent addContent = addContentMapper.selectById(counseling.getRelId());
+			AddContent addContent = addContentMapper.selectById(counseling
+					.getRelId());
 			answer = addContent.getContent();
 			answerdate = addContent.getCreatedate();
 		} else if (state == JieYouZaHuoDian.COUNSELING_STATE_ANSWER) {
 			answer = counseling.getAnswer();
 			answerdate = counseling.getAnswerdate();
 		} else {
-			return new TextBuilder().build(jieYouZaHuoDianDialog.noAnswer(), msg, (WeixinService) wxMpService);
+			return new TextBuilder().build(jieYouZaHuoDianDialog.noAnswer(),
+					msg, (WeixinService) wxMpService);
 		}
 
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.FROM_USER_REPLY);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.FROM_USER_REPLY);
 		return new TextBuilder().build(
-				jieYouZaHuoDianDialog.seeReply(counseling.getFromUserName(), answer, getLetterDate(answerdate)), msg,
+				jieYouZaHuoDianDialog.seeReply(counseling.getFromUserName(),
+						answer, getLetterDate(answerdate)), msg,
 				(WeixinService) wxMpService);
 	}
 
-	private WxMpXmlOutMessage confirmAnswer(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage confirmAnswer(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 		String content = msg.getContent();
 		WxSession session = sessionManager.getSession(msg.getFromUser());
 		if (KeyWord.TWO.equals(content)) {
 			// 换一封信看
-			Object obj = session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
+			Object obj = session
+					.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
 			session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
 			if (obj != null) {
-				counselingMapper.revertWaitAnswerState(Long.parseLong(obj.toString()), msg.getFromUser());
+				counselingMapper.revertWaitAnswerState(
+						Long.parseLong(obj.toString()), msg.getFromUser());
 			}
 
 			return readLetter(msg, context, wxMpService, sessionManager);
 		}
 
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.CONFIRM_ANSWER);
-		return new TextBuilder().build(jieYouZaHuoDianDialog.confirmAnswer(), msg, (WeixinService) wxMpService);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.CONFIRM_ANSWER);
+		return new TextBuilder().build(jieYouZaHuoDianDialog.confirmAnswer(),
+				msg, (WeixinService) wxMpService);
 	}
 
-	private WxMpXmlOutMessage rereplyLetter(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage rereplyLetter(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager, boolean isGetSession) {
 
 		// 保存回答
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		Long id = (Long) session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
-		String content = isGetSession ? (String) session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT)
+		Long id = (Long) session
+				.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
+		String content = isGetSession ? (String) session
+				.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT)
 				: msg.getContent();
 		Counseling counseling = counselingMapper.selectById(id);
-		if (JieYouZaHuoDian.COUNSELING_STATE_WAIT_ANSWER == counseling.getState()
+		if (JieYouZaHuoDian.COUNSELING_STATE_WAIT_ANSWER == counseling
+				.getState()
 				&& msg.getFromUser().equals(counseling.getToUserId())) {
 
 			WxMpUserEx user = wxMpUserMapper.selectByOpenId(msg.getFromUser());
@@ -388,55 +491,74 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 			session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE);
 			session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
 			session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT);
-			return new TextBuilder().build(jieYouZaHuoDianDialog.endReplyLetter(), msg, (WeixinService) wxMpService);
+			return new TextBuilder().build(
+					jieYouZaHuoDianDialog.endReplyLetter(), msg,
+					(WeixinService) wxMpService);
 		}
 
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.INTRO);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.INTRO);
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT);
-		return new TextBuilder().build(jieYouZaHuoDianDialog.timeout(), msg, (WeixinService) wxMpService);
+		return new TextBuilder().build(jieYouZaHuoDianDialog.timeout(), msg,
+				(WeixinService) wxMpService);
 	}
 
-	private WxMpXmlOutMessage endReplyLetter(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage endReplyLetter(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 		String content = msg.getContent();
 		if (KeyWord.TWO.equals(content)) {
 			WxSession session = sessionManager.getSession(msg.getFromUser());
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.REREPLY_LETTER);
-			return new TextBuilder().build(jieYouZaHuoDianDialog.rereplyLetter(), msg, (WeixinService) wxMpService);
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+					JieYouZaHuoDian.REREPLY_LETTER);
+			return new TextBuilder().build(
+					jieYouZaHuoDianDialog.rereplyLetter(), msg,
+					(WeixinService) wxMpService);
 		}
 
 		return rereplyLetter(msg, context, wxMpService, sessionManager, true);
 	}
 
-	private WxMpXmlOutMessage replyLetter(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage replyLetter(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 		String content = msg.getContent();
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		Long id = (Long) session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
+		Long id = (Long) session
+				.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
 		Counseling counseling = counselingMapper.selectById(id);
-		if (JieYouZaHuoDian.COUNSELING_STATE_WAIT_ANSWER == counseling.getState()
+		if (JieYouZaHuoDian.COUNSELING_STATE_WAIT_ANSWER == counseling
+				.getState()
 				&& msg.getFromUser().equals(counseling.getToUserId())) {
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.REPLY_LETTER);
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT, content);
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+					JieYouZaHuoDian.REPLY_LETTER);
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT, content);
 
-			return new TextBuilder().build(
-					jieYouZaHuoDianDialog.replyLetter(counseling.getFromUserName(), content, getLetterDate()), msg,
-					(WeixinService) wxMpService);
+			return new TextBuilder().build(jieYouZaHuoDianDialog.replyLetter(
+					counseling.getFromUserName(), content, getLetterDate()),
+					msg, (WeixinService) wxMpService);
 		}
 
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.INTRO);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.INTRO);
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER);
-		return new TextBuilder().build(jieYouZaHuoDianDialog.timeout(), msg, (WeixinService) wxMpService);
+		return new TextBuilder().build(jieYouZaHuoDianDialog.timeout(), msg,
+				(WeixinService) wxMpService);
 
 	}
 
-	private WxMpXmlOutMessage rewriteLetter(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage rewriteLetter(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager, boolean isGetSession) {
 
 		// 保存提问
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		String content = isGetSession ? (String) session.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT)
+		String content = isGetSession ? (String) session
+				.getAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT)
 				: msg.getContent();
 		WxMpUserEx user = wxMpUserMapper.selectByOpenId(msg.getFromUser());
 		Counseling counseling = new Counseling();
@@ -447,38 +569,49 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE);
 		session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT);
-		sendNotice("有人写信进来了");
-		return new TextBuilder().build(jieYouZaHuoDianDialog.endWriteLetter(), msg, (WeixinService) wxMpService);
+		sendNotice("写信进来了", sessionManager, msg.getFromUser());
+		return new TextBuilder().build(jieYouZaHuoDianDialog.endWriteLetter(),
+				msg, (WeixinService) wxMpService);
 	}
 
-	private WxMpXmlOutMessage confirmWriteLetter(WxMpTextMessage msg, Map<String, Object> context,
-			WxMpService wxMpService, WxSessionManager sessionManager) {
+	private WxMpXmlOutMessage confirmWriteLetter(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
+			WxSessionManager sessionManager) {
 
 		String content = msg.getContent();
 		WxMpUserEx user = wxMpUserMapper.selectByOpenId(msg.getFromUser());
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.CONFIRM_WRITE_LETTER);
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT, content);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.CONFIRM_WRITE_LETTER);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_CONTENT,
+				content);
 
 		return new TextBuilder().build(
-				jieYouZaHuoDianDialog.confirmWriteLetter(content, user.getNickname(), getLetterDate()), msg,
+				jieYouZaHuoDianDialog.confirmWriteLetter(content,
+						user.getNickname(), getLetterDate()), msg,
 				(WeixinService) wxMpService);
 	}
 
-	private WxMpXmlOutMessage endWriteLetter(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage endWriteLetter(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 
 		String content = msg.getContent();
 		if (KeyWord.TWO.equals(content)) {
 			WxSession session = sessionManager.getSession(msg.getFromUser());
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.REWRITE_LETTER);
-			return new TextBuilder().build(jieYouZaHuoDianDialog.rewriteLetter(), msg, (WeixinService) wxMpService);
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+					JieYouZaHuoDian.REWRITE_LETTER);
+			return new TextBuilder().build(
+					jieYouZaHuoDianDialog.rewriteLetter(), msg,
+					(WeixinService) wxMpService);
 		}
 
 		return rewriteLetter(msg, context, wxMpService, sessionManager, true);
 	}
 
-	private WxMpXmlOutMessage intro(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage intro(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 		String content = msg.getContent();
 
@@ -491,15 +624,20 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 		} else if (KeyWord.THREE.equals(content)) {
 			// 修改昵称
 			WxSession session = sessionManager.getSession(msg.getFromUser());
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.SIGN_UP);
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+					JieYouZaHuoDian.SIGN_UP);
 
-			return new TextBuilder().build(jieYouZaHuoDianDialog.changeNickname(), msg, (WeixinService) wxMpService);
+			return new TextBuilder().build(
+					jieYouZaHuoDianDialog.changeNickname(), msg,
+					(WeixinService) wxMpService);
 		} else if (KeyWord.NINE.equals(content)) {
 			// 退出
 			WxSession session = sessionManager.getSession(msg.getFromUser());
 			session.removeAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE);
 			WxMpUserEx user = wxMpUserMapper.selectByOpenId(msg.getFromUser());
-			return new TextBuilder().build(jieYouZaHuoDianDialog.exit(user.getNickname()), msg,
+			return new TextBuilder().build(
+					jieYouZaHuoDianDialog.exit(user.getNickname()), msg,
 					(WeixinService) wxMpService);
 		}
 
@@ -508,44 +646,60 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 
 	private int maxReplyCount = 5;
 
-	private WxMpXmlOutMessage readLetter(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage readLetter(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 		// 查询已回信数量
-		Integer count = counselingMapper.selectUnfinishedAnswerCountByToUserId(msg.getFromUser());
+		Integer count = counselingMapper
+				.selectUnfinishedAnswerCountByToUserId(msg.getFromUser());
 		count = count == null ? 0 : count;
 		if (count >= maxReplyCount) {
-			return new TextBuilder().build(jieYouZaHuoDianDialog.maxReply(), msg, (WeixinService) wxMpService);
+			return new TextBuilder().build(jieYouZaHuoDianDialog.maxReply(),
+					msg, (WeixinService) wxMpService);
 		} else {
 
-			Counseling counseling = selectOneNotAnswerCounseling(msg.getFromUser());
+			Counseling counseling = selectOneNotAnswerCounseling(msg
+					.getFromUser());
 			if (counseling == null) {
-				return new TextBuilder().build(jieYouZaHuoDianDialog.notLetter(), msg, (WeixinService) wxMpService);
+				return new TextBuilder().build(
+						jieYouZaHuoDianDialog.notLetter(), msg,
+						(WeixinService) wxMpService);
 			} else {
 
-				WxSession session = sessionManager.getSession(msg.getFromUser());
-				session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.READ_LETTER);
-				session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER, counseling.getId());
-				return new TextBuilder().build(
-						jieYouZaHuoDianDialog.readLetter(count + 1, counseling.getQuestion(),
-								counseling.getFromUserName(), getLetterDate(counseling.getCreatedate()), maxReplyCount),
-						msg, (WeixinService) wxMpService);
+				WxSession session = sessionManager
+						.getSession(msg.getFromUser());
+				session.setAttribute(
+						WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+						JieYouZaHuoDian.READ_LETTER);
+				session.setAttribute(
+						WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_LETTER,
+						counseling.getId());
+				return new TextBuilder().build(jieYouZaHuoDianDialog
+						.readLetter(count + 1, counseling.getQuestion(),
+								counseling.getFromUserName(),
+								getLetterDate(counseling.getCreatedate()),
+								maxReplyCount), msg,
+						(WeixinService) wxMpService);
 			}
 		}
 	}
 
 	private Counseling selectOneNotAnswerCounseling(String fromUserId) {
 		// 先检查是否有还未解答的问题
-		Counseling counseling = counselingMapper.selectWaitAnswerCounselingByToUserId(fromUserId);
+		Counseling counseling = counselingMapper
+				.selectWaitAnswerCounselingByToUserId(fromUserId);
 		if (counseling == null) {
 			int i = 0;
 			do {
 				// 查询一个随机问题
-				counseling = counselingMapper.selectOneNotAnswerCounseling(fromUserId);
+				counseling = counselingMapper
+						.selectOneNotAnswerCounseling(fromUserId);
 				if (counseling == null) {
 					break;
 				}
 
-				i = counselingMapper.updateWaitAnswerState(counseling.getId(), fromUserId);
+				i = counselingMapper.updateWaitAnswerState(counseling.getId(),
+						fromUserId);
 
 			} while (i == 0);
 		}
@@ -553,25 +707,33 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 		return counseling;
 	}
 
-	private WxMpXmlOutMessage writeLetter(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage writeLetter(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 		// 检查是否有正在咨询的信件
-		Counseling counseling = counselingMapper.selectUnfinishedCounselingByFromUserId(msg.getFromUser());
+		Counseling counseling = counselingMapper
+				.selectUnfinishedCounselingByFromUserId(msg.getFromUser());
 		if (counseling != null) {
 			// TODO 对未结束的询问进行处理
-			return new TextBuilder().build("你还有未结束的询问", msg, (WeixinService) wxMpService);
+			return new TextBuilder().build("你还有未结束的询问", msg,
+					(WeixinService) wxMpService);
 		}
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.WRITE_LETTER);
-		return new TextBuilder().build(jieYouZaHuoDianDialog.writeLetter(), msg, (WeixinService) wxMpService);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.WRITE_LETTER);
+		return new TextBuilder().build(jieYouZaHuoDianDialog.writeLetter(),
+				msg, (WeixinService) wxMpService);
 	}
 
-	private WxMpXmlOutMessage signUp(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage signUp(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 
 		String nickname = msg.getContent();
 		if (nickname.length() > 20) {
-			return new TextBuilder().build(jieYouZaHuoDianDialog.errorNickname(), msg, (WeixinService) wxMpService);
+			return new TextBuilder().build(
+					jieYouZaHuoDianDialog.errorNickname(), msg,
+					(WeixinService) wxMpService);
 		}
 
 		WxMpUserEx user = new WxMpUserEx();
@@ -580,26 +742,34 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 		wxMpUserMapper.update(user);
 
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.INTRO);
-		return new TextBuilder().build(jieYouZaHuoDianDialog.intro(nickname), msg, (WeixinService) wxMpService);
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.INTRO);
+		return new TextBuilder().build(jieYouZaHuoDianDialog.intro(nickname),
+				msg, (WeixinService) wxMpService);
 	}
 
 	/*
 	 * 进店提示，1 登记姓名 状态：SIGN_UP 2 开始咨询(写信 回信 修改姓名) 状态：INTRO
 	 */
-	private WxMpXmlOutMessage start(WxMpTextMessage msg, Map<String, Object> context, WxMpService wxMpService,
+	private WxMpXmlOutMessage start(WxMpTextMessage msg,
+			Map<String, Object> context, WxMpService wxMpService,
 			WxSessionManager sessionManager) {
 		WxMpUserEx user = wxMpUserMapper.selectByOpenId(msg.getFromUser());
 		if (user != null && StringUtils.isBlank(user.getNickname())) {
 			WxSession session = sessionManager.getSession(msg.getFromUser());
-			session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.SIGN_UP);
+			session.setAttribute(
+					WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+					JieYouZaHuoDian.SIGN_UP);
 
-			return new TextBuilder().build(jieYouZaHuoDianDialog.signUp(), msg, (WeixinService) wxMpService);
+			return new TextBuilder().build(jieYouZaHuoDianDialog.signUp(), msg,
+					(WeixinService) wxMpService);
 		}
 
 		WxSession session = sessionManager.getSession(msg.getFromUser());
-		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE, JieYouZaHuoDian.INTRO);
-		return new TextBuilder().build(jieYouZaHuoDianDialog.intro(user.getNickname()), msg,
+		session.setAttribute(WxSessionAttributeKey.JIE_YOU_ZA_HUO_DIAN_STATE,
+				JieYouZaHuoDian.INTRO);
+		return new TextBuilder().build(
+				jieYouZaHuoDianDialog.intro(user.getNickname()), msg,
 				(WeixinService) wxMpService);
 	}
 
@@ -613,10 +783,16 @@ public class JieYouZaHuoDianProcessor extends AbstractTextProcessor {
 		return new DateTime(date).toString(datePattern);
 	}
 
-	private void sendNotice(String content) {
-		String to = "519356442@qq.com";
-		String subject = "有人进店了";
-		emailSender.send(to, subject, content);
+	private String myOpenId = "oal-duGOIE-bl0naI63cw-lZ5PMQ";
 
+	private void sendNotice(String content, WxSessionManager sessionManager,
+			String openId) {
+		if (!myOpenId.equals(openId)) {
+			String name = getSessionUser(sessionManager, openId) == null ? "无名氏"
+					: getSessionUser(sessionManager, openId).getNickname();
+			String to = "519356442@qq.com";
+			String subject = name + "进店了";
+			emailSender.send(to, subject, name + content);
+		}
 	}
 }
