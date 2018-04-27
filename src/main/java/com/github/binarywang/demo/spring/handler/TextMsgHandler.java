@@ -4,18 +4,19 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
-
-import com.github.binarywang.demo.spring.async.SaveDBAsync;
-import com.github.binarywang.demo.spring.builder.TextBuilder;
-import com.github.binarywang.demo.spring.service.WeixinService;
-
 import me.chanjar.weixin.common.session.WxSessionManager;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
-import me.chanjar.weixin.mp.bean.message.category.WxMpTextMessage;
+
+import org.springframework.stereotype.Component;
+
+import com.github.binarywang.demo.spring.async.SaveDBAsync;
+import com.github.binarywang.demo.spring.builder.TextBuilder;
+import com.github.binarywang.demo.spring.entity.message.category.WxMpTextMessage;
+import com.github.binarywang.demo.spring.processor.text.AbstractTextProcessor;
+import com.github.binarywang.demo.spring.processor.text.factory.TextProcessFactory;
+import com.github.binarywang.demo.spring.service.WeixinService;
 
 /**
  * @author Binary Wang
@@ -34,6 +35,10 @@ public class TextMsgHandler extends AbstractHandler {
 		WxMpTextMessage msg = new WxMpTextMessage(wxMessage);
 		saveDBAsync.saveWxMpTextMessage(msg);
 
+		AbstractTextProcessor textProcessor = TextProcessFactory.create(msg, context, wxMpService, sessionManager);
+		if (textProcessor != null) {
+			return textProcessor.processor(msg, context, wxMpService, sessionManager);
+		}
 
 		return new TextBuilder().build(msg.getContent(), wxMessage, weixinService);
 

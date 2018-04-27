@@ -1,6 +1,6 @@
 package com.github.binarywang.demo.spring.mapper.message;
 
-import me.chanjar.weixin.mp.bean.message.category.WxMpTextMessage;
+import com.github.binarywang.demo.spring.entity.message.category.WxMpTextMessage;
 
 public interface WxMpTextMessageMapper {
 

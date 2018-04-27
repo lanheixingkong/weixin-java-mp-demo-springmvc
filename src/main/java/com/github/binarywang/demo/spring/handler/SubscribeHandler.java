@@ -4,18 +4,18 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.springframework.stereotype.Component;
-
-import com.github.binarywang.demo.spring.async.SaveDBAsync;
-import com.github.binarywang.demo.spring.builder.TextBuilder;
-import com.github.binarywang.demo.spring.service.WeixinService;
-
 import me.chanjar.weixin.common.exception.WxErrorException;
 import me.chanjar.weixin.common.session.WxSessionManager;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlMessage;
 import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
-import me.chanjar.weixin.mp.bean.result.WxMpUser;
+
+import org.springframework.stereotype.Component;
+
+import com.github.binarywang.demo.spring.async.SaveDBAsync;
+import com.github.binarywang.demo.spring.builder.TextBuilder;
+import com.github.binarywang.demo.spring.entity.user.WxMpUserEx;
+import com.github.binarywang.demo.spring.service.WeixinService;
 
 /**
  * 
@@ -37,7 +37,7 @@ public class SubscribeHandler extends AbstractHandler {
 
 		// 获取微信用户基本信息
 //		WxMpUser userWxInfo = weixinService.getUserService().userInfo(wxMessage.getFromUser(), null);
-		WxMpUser userWxInfo = new WxMpUser();
+		WxMpUserEx userWxInfo = new WxMpUserEx();
 		userWxInfo.setOpenId(wxMessage.getFromUser());
 		userWxInfo.setSubscribe(true);
 
@@ -57,7 +57,7 @@ public class SubscribeHandler extends AbstractHandler {
 		}
 
 		try {
-			return new TextBuilder().build("感谢关注", wxMessage, weixinService);
+			return new TextBuilder().build("感谢关注，回复【解忧杂货店】可以进入店里倾诉自己的烦恼哟", wxMessage, weixinService);
 		} catch (Exception e) {
 			this.logger.error(e.getMessage(), e);
 		}
